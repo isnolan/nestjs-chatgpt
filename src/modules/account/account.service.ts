@@ -1,9 +1,8 @@
-import { Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MoreThan } from 'typeorm';
+import { MoreThan, Repository } from 'typeorm';
 
-import { Account } from './entity/account';
+import { Account } from './entity/account.entity';
 
 @Injectable()
 export class AccountService {
@@ -11,6 +10,10 @@ export class AccountService {
     @InjectRepository(Account)
     private readonly repository: Repository<Account>,
   ) {}
+
+  async save(model: Account): Promise<Account> {
+    return this.repository.save(model);
+  }
 
   /**
    * get all account list
