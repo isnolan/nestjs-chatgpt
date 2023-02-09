@@ -1,13 +1,10 @@
 import { Module } from '@nestjs/common';
-import { AccountModule } from '../account/account.module';
+import { SupplierModule } from '../supplier/supplier.module';
 import { MessageController } from './message.controller';
 import { MessageService } from './message.service';
 
 @Module({
-  imports: [
-    // TypeOrmModule.forFeature([TLibrary]),
-    AccountModule,
-  ],
+  imports: [SupplierModule],
   controllers: [MessageController],
   providers: [MessageService],
 })

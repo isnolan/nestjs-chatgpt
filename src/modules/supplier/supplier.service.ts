@@ -2,21 +2,21 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MoreThan, Repository } from 'typeorm';
 
-import { Account } from './entity/account.entity';
+import { Supplier } from './entity/supplier.entity';
 
 @Injectable()
-export class AccountService {
+export class SupplierService {
   constructor(
-    @InjectRepository(Account)
-    private readonly repository: Repository<Account>,
+    @InjectRepository(Supplier)
+    private readonly repository: Repository<Supplier>,
   ) {}
 
-  async save(model: Account): Promise<Account> {
+  async save(model: Supplier): Promise<Supplier> {
     return this.repository.save(model);
   }
 
   /**
-   * get all account list
+   * get all Supplier list
    * @returns
    */
   async getList() {

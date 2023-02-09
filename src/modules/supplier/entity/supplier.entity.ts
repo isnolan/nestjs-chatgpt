@@ -1,10 +1,10 @@
 import { Entity, Column } from 'typeorm';
 import { Base } from '../../common/entity/base.entity';
 
-@Entity('chatgpt_account')
-export class Account extends Base {
+@Entity('chatgpt_supplier')
+export class Supplier extends Base {
   @Column({ type: 'tinyint', comment: '供应商类型' })
-  Provider: ProviderEnum;
+  Type: SupplierEnum;
 
   @Column({ type: 'varchar', length: 32, comment: '用户名', default: '' })
   User: string;
@@ -16,7 +16,7 @@ export class Account extends Base {
   ApiKey: string;
 }
 
-export enum ProviderEnum {
+export enum SupplierEnum {
   CHATGPT = 1,
   OPENAI = 2,
 }

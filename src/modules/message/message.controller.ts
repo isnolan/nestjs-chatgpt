@@ -1,12 +1,12 @@
 import { Controller, Get } from '@nestjs/common';
-import { AccountService } from '../account/account.service';
+import { SupplierService } from '../supplier/supplier.service';
 
 @Controller('message')
 export class MessageController {
-  constructor(private readonly accountService: AccountService) {}
+  constructor(private readonly supplierService: SupplierService) {}
 
-  @Get('account')
-  async account() {
-    return this.accountService.getList();
+  @Get('Supplier')
+  async Supplier() {
+    return this.supplierService.getList();
   }
 }
