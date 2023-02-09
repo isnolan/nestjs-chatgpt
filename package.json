@@ -1,0 +1,66 @@
+{
+  "name": "draft-chatgpt",
+  "description": "The ChatGPT Service for Node.js",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "prebuild": "rimraf dist",
+    "build": "nest build",
+    "format": "prettier --write \"src/**/*.ts\" \"e2e/**/*.ts\"",
+    "start": "NODE_ENV=staging nest start",
+    "start:dev": "rimraf dist && NODE_ENV=development nest start --watch",
+    "start:debug": "rimraf dist && NODE_ENV=development nest start --debug --watch",
+    "start:prod": "NODE_ENV=production node src/main",
+    "lint": "eslint '{src,apps,libs,test}/**/*.ts' --fix",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage",
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "test:e2e": "jest --config ./e2e/jest-e2e.json",
+    "prepare": "husky install",
+    "postinstall": "npx husky install",
+    "precommit": "lint-staged && npm run lint && npm run test"
+  },
+  "lint-staged": {
+    "src/**/*.ts": [
+      "eslint --fix --ext .js",
+      "prettier --write"
+    ]
+  },
+  "dependencies": {
+    "@nestjs/common": "^9.0.11",
+    "@nestjs/config": "^2.2.0",
+    "@nestjs/core": "^9.0.11",
+    "@nestjs/platform-express": "^9.0.11",
+    "nest-winston": "^1.7.0",
+    "winston": "^3.8.1",
+    "winston-daily-rotate-file": "^4.7.1"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^17.1.1",
+    "@commitlint/config-conventional": "^17.1.0",
+    "@nestjs/cli": "^9.0.0",
+    "@nestjs/schematics": "^9.0.1",
+    "@nestjs/testing": "^9.0.11",
+    "@types/express": "4.17.13",
+    "@types/jest": "28.1.4",
+    "@types/node": "18.0.3",
+    "@typescript-eslint/eslint-plugin": "^5.35.1",
+    "@typescript-eslint/parser": "^5.35.1",
+    "class-transformer": "0.5.1",
+    "class-validator": "0.13.2",
+    "eslint": "8.19.0",
+    "eslint-config-prettier": "8.5.0",
+    "eslint-plugin-import": "2.26.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "husky": "^8.0.1",
+    "jest": "28.1.2",
+    "prettier": "2.7.1",
+    "rimraf": "3.0.2",
+    "ts-jest": "28.0.5",
+    "ts-loader": "9.3.1",
+    "ts-node": "10.8.2",
+    "tsconfig-paths": "4.0.0",
+    "typescript": "4.7.4"
+  }
+}
