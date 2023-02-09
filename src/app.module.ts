@@ -2,8 +2,8 @@ import * as winston from 'winston';
 import 'winston-daily-rotate-file';
 import { Module } from '@nestjs/common';
 import { WinstonModule } from 'nest-winston';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import Modules from './modules';
 import { AppService } from './app.service';

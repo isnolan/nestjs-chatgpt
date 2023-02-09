@@ -15,7 +15,7 @@ export abstract class Base {
   @Column({ comment: '商户/站点ID', default: 0, nullable: true })
   MerchantId: number;
 
-  @Column({ comment: '状态', default: 0, nullable: true })
+  @Column({ type: 'tinyint', comment: '状态', default: 0, nullable: true })
   Status: number;
 
   @Column({ comment: '是否删除', default: false, nullable: true })
@@ -36,6 +36,6 @@ export abstract class Base {
   UpdateTime: Date;
 
   //每次调用实体管理器或存储库的save时自动增长实体版本
-  @VersionColumn({ comment: '数据版本', default: 0 })
+  @VersionColumn({ type: 'tinyint', comment: '数据版本', default: 0 })
   Version: number;
 }

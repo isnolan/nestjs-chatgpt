@@ -12,7 +12,7 @@ export class Supplier extends Base {
   @Column({ type: 'varchar', length: 32, comment: '密码', default: '' })
   Password: string;
 
-  @Column({ type: 'varchar', length: 32, comment: 'API KEY', default: '' })
+  @Column({ type: 'varchar', length: 64, comment: 'API KEY', default: '' })
   ApiKey: string;
 }
 
