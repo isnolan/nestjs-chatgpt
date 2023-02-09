@@ -15,16 +15,16 @@ export class ConversationService {
     return this.repository.save(model);
   }
 
-  /**
-   * get all Supplier list
-   * @returns
-   */
-  async getList() {
+  async getList(): Promise<[Conversation[], number]> {
     const result = await this.repository.findAndCount({
       where: { Status: MoreThan(0) },
       order: { Id: 'DESC' },
     });
 
     return result;
+  }
+
+  async getOne(Id: number): Promise<Conversation> {
+    return this.repository.findOneBy({ Id });
   }
 }

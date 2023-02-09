@@ -9,8 +9,8 @@ export class Conversation extends Base {
   @Column({ type: 'int', comment: 'SupplierId Id', default: 0 })
   SupplierId: number;
 
-  @Column({ type: 'varchar', length: 36, comment: 'Supplier Conversation Id', default: '' })
-  SupplierConversationId: string;
+  @Column({ type: 'tinyint', comment: 'SupplierId Type', default: 0 })
+  SupplierType: number;
 }
 
 export enum ProviderEnum {

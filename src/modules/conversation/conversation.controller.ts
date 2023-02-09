@@ -1,3 +1,6 @@
+import { Queue } from 'bull';
+import { v4 as uuidv4 } from 'uuid';
+import { InjectQueue } from '@nestjs/bull';
 import { plainToClass } from 'class-transformer';
 import { Controller, Post, Body, Query } from '@nestjs/common';
 import { MessageService } from '../message/message.service';
@@ -6,10 +9,16 @@ import { CreateConversationDto } from './dto/create-conversation.dto';
 
 import { Message } from '../message/entity/message.entity';
 import { Conversation } from './entity/conversation.entity';
+import { SupplierEnum } from '../supplier/entity/supplier.entity';
 
 @Controller('conversation')
 export class ConversationController {
-  constructor(private readonly service: ConversationService, private readonly messageService: MessageService) {}
+  constructor(
+    @InjectQueue('message')
+    private readonly messageQueue: Queue,
+    private readonly service: ConversationService,
+    private readonly messageService: MessageService,
+  ) {}
 
   /**
    * Create an Conversation
@@ -23,24 +32,44 @@ export class ConversationController {
    */
   @Post('create')
   async create(@Body() payload: CreateConversationDto) {
-    const { MerchantId, UserId, ConversationId, Question } = payload;
+    let supplier: { Id: number; Type: number };
+    const { MerchantId, UserId, Question } = payload;
+    let ConversationId = payload.ConversationId;
 
     // If the conversation does not exist,
     // then create the record after getting the vendor ID according to the policy
     // Let us first assume that the supply ID is 101
     if (!ConversationId) {
-      const SupplierId = 101;
-      const model = plainToClass(Conversation, { MerchantId, UserId, SupplierId });
+      supplier = { Id: 101, Type: 1 }; // from the prolicy, later
+      const model = plainToClass(Conversation, {
+        MerchantId,
+        UserId,
+        SupplierId: supplier.Id,
+        SupplierType: supplier.Type,
+      });
       const { Id } = await this.service.save(model);
-      payload.ConversationId = Id;
-      // console.log(`->conversationId`, Id);
+      ConversationId = Id;
+    } else {
+      // get the last supplier from db
+      const result = await this.service.getOne(ConversationId);
+      supplier = {
+        Id: result.SupplierId,
+        Type: result.SupplierType,
+      };
     }
 
-    // Record the message and join the sending queue
-    const model = plainToClass(Message, { ConversationId: payload.ConversationId, Question });
-    const message = await this.messageService.save(model);
-    // console.log(`->message`, message);
+    // Record the message
+    const model = plainToClass(Message, { ConversationId, QuestionId: uuidv4(), Question });
+    const { Id: MessageId } = await this.messageService.save(model);
+    // console.log(`->message`, MessageId, SupplierEnum[supplier.Type]);
 
-    return { code: 0, message: 'success', data: { ConversationId, MessageId: message.Id } };
+    // Join the sending queue
+    const job = await this.messageQueue.add(
+      `${SupplierEnum[supplier.Type].toLowerCase()}`,
+      { SupplierId: supplier.Id, ConversationId, MessageId },
+      { attempts: 2, removeOnComplete: true, removeOnFail: true },
+    );
+
+    return { code: 0, message: 'success', data: { ConversationId, MessageId, JodId: job.id } };
   }
 }

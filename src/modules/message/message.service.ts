@@ -1,4 +1,4 @@
-import { Repository } from 'typeorm';
+import { LessThan, Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
@@ -13,5 +13,18 @@ export class MessageService {
 
   async save(model: Message): Promise<Message> {
     return this.repository.save(model);
+  }
+
+  async getOne(Id: number): Promise<Message> {
+    return this.repository.findOneBy({ Id });
+  }
+
+  async getLastOne(ConversationId: number, MessageId: number): Promise<Message> {
+    const result = await this.repository.find({
+      where: { ConversationId, Id: LessThan(MessageId) },
+      order: { Id: 'DESC' },
+      take: 1,
+    });
+    return result[0];
   }
 }

@@ -12,5 +12,21 @@ export default () => {
       timezone: 'Z',
       synchronize: process.env.NODE_ENV == 'development', // only dev
     },
+
+    redis: {
+      host: process.env.REDIS_HOST,
+      port: parseInt(process.env.REDIS_PORT || '6379'),
+    },
+
+    chatgpt: {
+      email: process.env.CHATGPT_EMAIL,
+      password: process.env.CHATGPT_PASSWORD,
+      nopechaKey: process.env.CHATGPT_NOPECHA,
+    },
+
+    proxy: {
+      agent: process.env.PROXY_AGENT,
+      path: process.env.PROXY_PATH,
+    },
   };
 };
