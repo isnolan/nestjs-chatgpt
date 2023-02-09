@@ -1,5 +1,5 @@
 {
-  "name": "draft-chatgpt",
+  "name": "nestjs-chatgpt",
   "description": "The ChatGPT Service for Node.js",
   "version": "0.0.1",
   "private": true,
