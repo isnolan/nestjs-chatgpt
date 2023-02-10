@@ -7,6 +7,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MessageController } from './message.controller';
 import { MessageProcessor } from './message.processor';
 import { MessageService } from './message.service';
+import { SupplierModule } from '../supplier/supplier.module';
 
 @Module({
   imports: [
@@ -19,6 +20,8 @@ import { MessageService } from './message.service';
       imports: [ConfigModule],
       useFactory: async (config: ConfigService) => ({ redis: config.get('redis') }),
     }),
+
+    SupplierModule,
   ],
   controllers: [MessageController],
   providers: [MessageService, MessageProcessor],

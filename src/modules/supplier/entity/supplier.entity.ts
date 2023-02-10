@@ -14,6 +14,9 @@ export class Supplier extends Base {
 
   @Column({ type: 'varchar', length: 64, comment: 'API KEY', default: '' })
   ApiKey: string;
+
+  @Column({ type: 'text', comment: 'Authorisation', default: null })
+  Authorisation: string;
 }
 
 export enum SupplierEnum {

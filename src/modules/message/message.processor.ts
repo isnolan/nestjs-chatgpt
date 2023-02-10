@@ -6,6 +6,8 @@ import { InjectQueue, Process, Processor, OnQueueActive, OnGlobalQueueCompleted 
 
 import { MessageService } from './message.service';
 import { Message } from './entity/message.entity';
+import { SupplierService } from '../supplier/supplier.service';
+import { Supplier } from '../supplier/entity/supplier.entity';
 
 const importDynamic = new Function('modulePath', 'return import(modulePath)');
 
@@ -21,6 +23,7 @@ export class MessageProcessor {
     private readonly queue: Queue,
     private readonly config: ConfigService,
     private readonly service: MessageService,
+    private readonly supplier: SupplierService,
   ) {
     this.proxy = config.get('proxy');
     this.chatgpt = config.get('chatgpt');
@@ -29,14 +32,14 @@ export class MessageProcessor {
   }
 
   async initGPT() {
-    const { ChatGPTAPIBrowser } = await importDynamic('chatgpt');
+    const { ChatGPTAPIBrowser } = await importDynamic('@yhostc/chatgpt');
     this.api = new ChatGPTAPIBrowser({
       ...this.chatgpt,
-      debug: true,
+      debug: false,
       minimize: false,
       // proxyServer: '192.168.2.6:7890'
     });
-    await this.api.initSession();
+    // await this.api.initSession();
   }
 
   @OnQueueActive()
@@ -53,12 +56,12 @@ export class MessageProcessor {
 
     // Get Local Conversation and Message ID
     const { SupplierId, ConversationId, MessageId } = job.data as any;
-
-    // TODO: Auto cookie signin from SupplierId
-    // console.log(`->`, SupplierId);
-
     return new Promise(async (resolve, reject) => {
       try {
+        // Auto cookie signin from SupplierId
+        const { Authorisation } = await this.supplier.getOne(SupplierId);
+        await this.api.initSession({ cookies: JSON.parse(Authorisation) });
+
         // Get Last Supplier Message Id
         const last = await this.service.getLastOne(ConversationId, MessageId);
         // console.log(`->last:`, last);
@@ -66,19 +69,27 @@ export class MessageProcessor {
         // Get this time message
         const { QuestionId, Question } = await this.service.getOne(MessageId);
         //console.log(`->this:`, QuestionId, Question);
-
+        console.log(`->query: `, last?.SupplierConversationId, last?.SupplierReplyId);
         const result = await this.api.sendMessage(Question, {
           conversationId: last?.SupplierConversationId,
           parentMessageId: last?.SupplierReplyId,
           messageId: QuestionId,
           onProgress: (res) => {
-            console.log('progress:', res?.response);
+            console.log('->progress:', res?.response);
           },
         });
+        console.log(`->result:`, result);
+
+        // {
+        //   response: 'Hello! How can I help you today?',
+        //   conversationId: '3bd72683-4301-4cab-b700-3661cef44538',
+        //   messageId: 'd569071d-b06c-41ec-aa59-b2dec54e6019'
+        // }
 
         // save supplier reply
         if (result) {
           const model = plainToClass(Message, {
+            Id: MessageId,
             ConversationId,
             Reply: result?.response,
             SupplierReplyId: result?.messageId,
@@ -89,10 +100,19 @@ export class MessageProcessor {
 
         resolve(result);
       } catch (err) {
-        reject(err);
-      }
+        console.warn(err);
 
-      // console.log(result.response);
+        reject(err);
+      } finally {
+        // close the session and save the update cookies
+        const cookies = await this.api.closeSession();
+        const model = plainToClass(Supplier, {
+          Id: SupplierId,
+          Authorisation: JSON.stringify(cookies),
+        });
+        const res = await this.supplier.save(model);
+        console.log(`->update authorisation`, res.UpdateTime);
+      }
     });
   }
 
