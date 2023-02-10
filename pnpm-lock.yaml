@@ -17,7 +17,7 @@ specifiers:
   '@types/node': 18.0.3
   '@typescript-eslint/eslint-plugin': ^5.35.1
   '@typescript-eslint/parser': ^5.35.1
-  '@yhostc/chatgpt': ^0.2.1
+  '@yhostc/chatgpt': ^0.2.2
   bull: ^4.10.3
   class-transformer: 0.5.1
   class-validator: 0.13.2
@@ -50,7 +50,7 @@ dependencies:
   '@nestjs/core': 9.3.7_ipss6dxf5icme2x7c6jvrkkrmq
   '@nestjs/platform-express': 9.3.7_zmctrozi6xxh3beaccl6ebop6u
   '@nestjs/typeorm': 9.0.1_mpdsrpzfalcz3y5zlsd3nxqzii
-  '@yhostc/chatgpt': 0.2.1_puppeteer@19.6.3
+  '@yhostc/chatgpt': 0.2.2_puppeteer@19.6.3
   bull: 4.10.3
   mysql2: 3.1.2
   nest-winston: 1.8.0_247vkf2fkvlfwvafyvagjfc72u
@@ -1797,8 +1797,8 @@ packages:
     resolution: {integrity: sha512-NuHqBY1PB/D8xU6s/thBgOAiAP7HOYDQ32+BFZILJ8ivkUkAHQnWfn6WhL79Owj1qmUnoN/YPhktdIoucipkAQ==}
     dev: true
 
-  /@yhostc/chatgpt/0.2.1_puppeteer@19.6.3:
-    resolution: {integrity: sha512-A5b+2JIMP6iKklSKlQR1mA1eg2Ya3YmL29Pv+fiIt1DPOuDE6f1mkMeC4laUFR5osTZeQz5rgdq3v0S8OL4Q9g==}
+  /@yhostc/chatgpt/0.2.2_puppeteer@19.6.3:
+    resolution: {integrity: sha512-Rp6/G6uq5n3l3Ji3eX4werRYvMGjrR06gDiuDFeH7C6Y7o1q+s0+fXo1yNp1q9YxJx6Keivt7bjXX2T+WWooeA==}
     engines: {node: '>=18'}
     dependencies:
       delay: 5.0.0
