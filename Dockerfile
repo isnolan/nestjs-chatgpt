@@ -24,7 +24,7 @@ RUN apk update && apk add --no-cache nmap && \
 # workdir
 WORKDIR /app
 ADD dist/ ./ 
-COPY .env.sample ./
+# COPY .env.sample ./
 # COPY .env.production ./
 COPY package*.json ./
 
