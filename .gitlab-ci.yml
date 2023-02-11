@@ -11,7 +11,8 @@ cache:
 stages:
   - build
   - deploy
-  - publish
+  - deploy-qcloud
+  # - publish
 
 build:
   stage: build
@@ -19,6 +20,7 @@ build:
   tags:
     - node.js
   script:
+    - export PUPPETEER_SKIP_DOWNLOAD=true
     - npm install --registry=https://registry.npm.taobao.org
     - npm run build
   artifacts:
@@ -40,12 +42,26 @@ deploy:
     - docker push $REGISTRY_PATH
     - docker logout
 
-publish:
-  stage: publish
+deploy-qcloud:
+  stage: deploy-qcloud
+  image: docker:20.10.17-dind
   tags:
-    - shell
+    - node.js
   variables:
     REGISTRY_PATH: $CI_REGISTRY_IMAGE:$CI_PIPELINE_ID
+    IMAGE_ID: $(docker images | grep $CI_REGISTRY/$CI_PROJECT_PATH\/$IMAGE_NAME | awk '{print $3}')
   script:
     # - export
-    - curl -X PUT -H "content-type:application/json" -H "Cookie:KuboardUsername=${KuboardUsername};KuboardAccessKey=${KuboardAccessKey}" -d '{"kind":"deployments","namespace":"draft","name":"'${CI_PROJECT_NAME}'","images":{"'${CI_REGISTRY_IMAGE}'":"'${REGISTRY_PATH}'"}}' https://kuboard.devflow.ltd/kuboard-api/cluster/Dev/kind/CICDApi/admin/resource/updateImageTag
+    - docker build -t $REGISTRY_PATH .
+    - echo "$REGISTRY_QCLOUD_PWD" | docker login --username $REGISTRY_QCLOUD_USER $REGISTRY_QCLOUD_URL --password-stdin
+    - docker push $REGISTRY_PATH
+    - docker logout
+# publish:
+#   stage: publish
+#   tags:
+#     - shell
+#   variables:
+#     REGISTRY_PATH: $CI_REGISTRY_IMAGE:$CI_PIPELINE_ID
+#   script:
+#     # - export
+#     - curl -X PUT -H "content-type:application/json" -H "Cookie:KuboardUsername=${KuboardUsername};KuboardAccessKey=${KuboardAccessKey}" -d '{"kind":"deployments","namespace":"draft","name":"'${CI_PROJECT_NAME}'","images":{"'${CI_REGISTRY_IMAGE}'":"'${REGISTRY_PATH}'"}}' https://kuboard.devflow.ltd/kuboard-api/cluster/Dev/kind/CICDApi/admin/resource/updateImageTag
