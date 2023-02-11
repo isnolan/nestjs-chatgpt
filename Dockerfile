@@ -1,4 +1,5 @@
-FROM node:19.4.0-alpine
+FROM node:lts-alpine
+
 # Essentials
 RUN apk add -U tzdata
 ENV TZ="Asia/Shanghai"
@@ -19,7 +20,7 @@ RUN apk update && apk add --no-cache nmap && \
       "freetype>2.8" \
       ttf-freefont \
       nss
-      
+
 # workdir
 WORKDIR /app
 ADD dist/ ./ 
