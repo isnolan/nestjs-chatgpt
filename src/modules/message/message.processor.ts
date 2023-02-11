@@ -99,11 +99,7 @@ export class MessageProcessor {
         }
 
         resolve(result);
-      } catch (err) {
-        console.warn(err);
 
-        reject(err);
-      } finally {
         // close the session and save the update cookies
         const cookies = await this.api.closeSession();
         const model = plainToClass(Supplier, {
@@ -112,6 +108,10 @@ export class MessageProcessor {
         });
         const res = await this.supplier.save(model);
         console.log(`->update authorisation`, res.UpdateTime);
+      } catch (err) {
+        console.warn(err);
+        reject(err);
+      } finally {
       }
     });
   }
