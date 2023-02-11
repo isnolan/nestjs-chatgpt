@@ -24,12 +24,11 @@ RUN apk update && apk add --no-cache nmap && \
 # workdir
 WORKDIR /app
 ADD dist/ ./ 
-# COPY .env.sample ./
-# COPY .env.production ./
+COPY .env.sample ./
 COPY package*.json ./
 
 # RUN npm set-script prepare ''
 RUN npm install --registry=https://registry.npm.taobao.org --ignore-scripts
 # RUN apk update && apk add bash
 
-ENTRYPOINT ["npm", "run", "start:prod"]
+ENTRYPOINT ["node", "main.js"]
