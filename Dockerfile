@@ -29,6 +29,7 @@ ADD dist/ ./
 COPY package*.json ./
 
 # RUN npm set-script prepare ''
+RUN npm install pnpm -g
 RUN pnpm ci --registry=https://registry.npm.taobao.org --ignore-scripts
 # RUN apk update && apk add bash
 
