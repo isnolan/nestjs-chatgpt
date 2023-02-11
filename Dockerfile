@@ -32,4 +32,4 @@ COPY package*.json ./
 RUN npm install --registry=https://registry.npm.taobao.org --ignore-scripts
 # RUN apk update && apk add bash
 
-ENTRYPOINT ["pnpm", "run", "start:prod"]
+ENTRYPOINT ["npm", "run", "start:prod"]
