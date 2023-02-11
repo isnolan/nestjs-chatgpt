@@ -51,7 +51,7 @@ deploy-qcloud:
     REGISTRY_PATH: $CI_REGISTRY_IMAGE:$CI_PIPELINE_ID
     IMAGE_ID: $(docker images | grep $CI_REGISTRY/$CI_PROJECT_PATH\/$IMAGE_NAME | awk '{print $3}')
   script:
-    # - export
+    - export
     - docker build --platform linux/amd64 -t $REGISTRY_PATH .
     - echo "$REGISTRY_QCLOUD_PWD" | docker login --username $REGISTRY_QCLOUD_USER $REGISTRY_QCLOUD_URL --password-stdin
     - docker push $REGISTRY_PATH
