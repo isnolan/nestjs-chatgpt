@@ -1,4 +1,4 @@
-FROM node:lts-buster
+FROM node:buster
 
 # Essentials
 RUN apk add -U tzdata
