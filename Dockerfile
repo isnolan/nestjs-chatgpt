@@ -1,4 +1,4 @@
-FROM node:lts-alpine
+FROM node:silm
 
 # Essentials
 RUN apk add -U tzdata
@@ -28,7 +28,7 @@ RUN apk update && apk add --no-cache nmap && \
       "freetype>2.8" \
       ttf-freefont \
       nss
-RUN apk add --no-cache libnss3 
+      
 RUN apk add --no-cache libxss1 
 RUN apk add --no-cache libasound2 
 RUN apk add --no-cache libatk-bridge2.0-0 
