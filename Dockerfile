@@ -28,8 +28,6 @@ RUN apk update && apk add --no-cache nmap && \
       "freetype>2.8" \
       ttf-freefont \
       nss
-
-RUN apk add --no-cache libgconf-2-4 
 RUN apk add --no-cache libnss3 
 RUN apk add --no-cache libxss1 
 RUN apk add --no-cache libasound2 
