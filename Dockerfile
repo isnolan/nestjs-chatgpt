@@ -23,18 +23,19 @@ RUN apk update && apk add --no-cache nmap && \
     echo @edge http://nl.alpinelinux.org/alpine/edge/main >> /etc/apk/repositories && \
     apk update && \
     apk add --no-cache \
-      libgconf-2-4 \
-      libnss3 \
-      libxss1 \
-      libasound2 \
-      libatk-bridge2.0-0 \
-      libgtk-3-0 \
-      xvfb \
       chromium \
       harfbuzz \
       "freetype>2.8" \
       ttf-freefont \
       nss
+
+RUN apk add --no-cache libgconf-2-4 
+RUN apk add --no-cache libnss3 
+RUN apk add --no-cache libxss1 
+RUN apk add --no-cache libasound2 
+RUN apk add --no-cache libatk-bridge2.0-0 
+RUN apk add --no-cache libgtk-3-0 
+RUN apk add --no-cache xvfb 
 # Set the DISPLAY environment variable & Start xvfb
 ENV DISPLAY=:99
 RUN Xvfb $DISPLAY -screen 0 1920x1080x16 &
