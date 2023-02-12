@@ -1,4 +1,4 @@
-FROM node:lts-silm
+FROM node:lts-buster
 
 # Essentials
 RUN apk add -U tzdata
