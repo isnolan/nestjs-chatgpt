@@ -1,9 +1,9 @@
-FROM node:lts-buster
+FROM node:lts-slim
 
 # Essentials
-RUN apk add -U tzdata
-ENV TZ="Asia/Shanghai"
-RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+# RUN apk add -U tzdata
+# ENV TZ="Asia/Shanghai"
+# RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
 # production
 ENV NODE_ENV=production
@@ -18,25 +18,37 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
 # RUN echo "Chrome: " && google-chrome --version
 
 # Install Chromium
-RUN apk update && apk add --no-cache nmap && \
-    echo @edge http://nl.alpinelinux.org/alpine/edge/community >> /etc/apk/repositories && \
-    echo @edge http://nl.alpinelinux.org/alpine/edge/main >> /etc/apk/repositories && \
-    apk update && \
-    apk add --no-cache \
-      chromium \
-      harfbuzz \
-      "freetype>2.8" \
-      ttf-freefont \
-      nss
-      
-RUN apk add --no-cache libxss1 
-RUN apk add --no-cache libasound2 
-RUN apk add --no-cache libatk-bridge2.0-0 
-RUN apk add --no-cache libgtk-3-0 
-RUN apk add --no-cache xvfb 
-# Set the DISPLAY environment variable & Start xvfb
+# RUN apk update && apk add --no-cache nmap && \
+#     echo @edge http://nl.alpinelinux.org/alpine/edge/community >> /etc/apk/repositories && \
+#     echo @edge http://nl.alpinelinux.org/alpine/edge/main >> /etc/apk/repositories && \
+#     apk update && \
+#     apk add --no-cache \
+#       chromium \
+#       harfbuzz \
+#       "freetype>2.8" \
+#       ttf-freefont \
+#       nss
+# # Set the DISPLAY environment variable & Start xvfb
+# ENV DISPLAY=:99
+# RUN Xvfb $DISPLAY -screen 0 1920x1080x16 &
+
+RUN apt-get update && apt-get install -y \
+  wget \
+  libgconf-2-4 \
+  libnss3 \
+  libxss1 \
+  libasound2 \
+  libatk-bridge2.0-0 \
+  libgtk-3-0 \
+  xvfb
+RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
+  && dpkg -i google-chrome-stable_current_amd64.deb \
+  && apt-get -fy install
+# Set the DISPLAY environment variable
 ENV DISPLAY=:99
 RUN Xvfb $DISPLAY -screen 0 1920x1080x16 &
+# RUN apt-get update
+# RUN apt-get install -y chromium
 
 # workdir
 WORKDIR /app
