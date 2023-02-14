@@ -9,6 +9,8 @@ import { MessageProcessor } from './message.processor';
 import { MessageService } from './message.service';
 import { SupplierModule } from '../supplier/supplier.module';
 
+import { MessageGateway } from './message.gateway';
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([Message]),
@@ -24,7 +26,7 @@ import { SupplierModule } from '../supplier/supplier.module';
     SupplierModule,
   ],
   controllers: [MessageController],
-  providers: [MessageService, MessageProcessor],
+  providers: [MessageService, MessageProcessor, MessageGateway],
   exports: [MessageService],
 })
 export class MessageModule {}
