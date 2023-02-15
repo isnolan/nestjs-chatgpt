@@ -12,24 +12,15 @@ import {
 import { from, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Server, Socket } from 'socket.io';
+import { ServerToClientEvents, ClientToServerEvents, Message, User } from '../room/room.interface';
+import { RoomService } from '../room/room.service';
 
-@WebSocketGateway({ namespace: 'chat', cors: { origin: '*' } })
+@WebSocketGateway({ cors: { origin: '*' } })
 export class MessageGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
-  server: Server;
+  public readonly server: Server = new Server<ServerToClientEvents, ClientToServerEvents>();
 
-  // 接入客户端
-  public wsClients = [];
-
-  constructor() {
-    setInterval(() => {
-      console.log(`->server:`, this.wsClients.length);
-      // if (this.wsClients.length > 0) {
-      //   this.wsClients[0].emit('events', 'ping');
-      // }
-      this.server.in('9999999').emit('events', { ping: 'pong', time: +new Date() });
-    }, 3000);
-  }
+  constructor(private readonly room: RoomService) {}
 
   /**
    * Node init
@@ -37,26 +28,6 @@ export class MessageGateway implements OnGatewayInit, OnGatewayConnection, OnGat
    */
   afterInit() {
     console.log(`->after init`);
-  }
-
-  handleConnection(client: Socket, room: string) {
-    this.wsClients.push(client);
-    console.log(`->connected`, client.id, room);
-
-    client.on('room', (roomId) => {
-      client.join(room);
-      console.log(`->join room:`, roomId);
-    });
-  }
-
-  handleDisconnect(client) {
-    for (let i = 0; i < this.wsClients.length; i++) {
-      if (this.wsClients[i] === client) {
-        this.wsClients.splice(i, 1);
-        break;
-      }
-    }
-    console.log(`->disconnected`);
   }
 
   @SubscribeMessage('events')
@@ -69,5 +40,40 @@ export class MessageGateway implements OnGatewayInit, OnGatewayConnection, OnGat
   async identity(@MessageBody() data: number): Promise<number> {
     console.log(`->identity:`, data + 1);
     return data + 1;
+  }
+
+  /**
+   * 广播消息
+   * @param payload
+   */
+  @SubscribeMessage('events')
+  handleQuestionEvent(@MessageBody() payload: Message) {
+    // 接收请求，并广播到房间所有人
+    this.server.to(payload.RoomId).emit('events', payload); // broadcast messages
+    return payload;
+  }
+
+  /**
+   * Join room
+   * @param payload
+   */
+  @SubscribeMessage('join_room')
+  async handleSetClientDataEvent(@MessageBody() payload: { RoomId: string; User: User }) {
+    if (payload.User.SocketId) {
+      //
+      await this.server.in(payload.User.SocketId).socketsJoin(payload.RoomId);
+      await this.room.addUserToRoom(payload.RoomId, payload.User);
+    }
+  }
+
+  // Will fire when a client connects to the server
+  async handleConnection(socket: Socket): Promise<void> {
+    console.log(`Socket connected: ${socket.id}`);
+  }
+
+  // Will fire when a client disconnects from the server
+  async handleDisconnect(socket: Socket): Promise<void> {
+    await this.room.removeUserFromAllRooms(socket.id);
+    console.log(`Socket disconnected: ${socket.id}`);
   }
 }

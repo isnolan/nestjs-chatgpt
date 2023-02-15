@@ -7,6 +7,7 @@ import { MessageProcessor } from './message.processor';
 import { MessageService } from './message.service';
 
 import { MessageGateway } from './message.gateway';
+import { RoomModule } from '../room/room.module';
 
 @Module({
   imports: [
@@ -17,6 +18,8 @@ import { MessageGateway } from './message.gateway';
       imports: [ConfigModule],
       useFactory: async (config: ConfigService) => ({ redis: config.get('redis') }),
     }),
+
+    RoomModule,
   ],
   controllers: [MessageController],
   providers: [MessageService, MessageProcessor, MessageGateway],
