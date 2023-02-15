@@ -2,8 +2,7 @@ import * as winston from 'winston';
 import 'winston-daily-rotate-file';
 import { Module } from '@nestjs/common';
 import { WinstonModule } from 'nest-winston';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 
 import Modules from './modules';
 import { AppService } from './app.service';
@@ -17,12 +16,6 @@ import configuration from './config/configuration';
       isGlobal: true,
       envFilePath: [`./.env.${process.env.NODE_ENV}`, `./.env`],
       load: [configuration],
-    }),
-
-    // TypeORM
-    TypeOrmModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => config.get('database'),
     }),
 
     // Logs

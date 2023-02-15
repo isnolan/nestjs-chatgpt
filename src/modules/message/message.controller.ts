@@ -5,8 +5,8 @@ import { MessageService } from './message.service';
 export class MessageController {
   constructor(private readonly service: MessageService) {}
 
-  @Get()
-  async Supplier() {
-    return await this.service.getLastOne(10, 28);
+  @Get('get')
+  async get() {
+    // return await this.service.getLastOne(10, 28);
   }
 }
