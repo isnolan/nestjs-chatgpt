@@ -8,59 +8,59 @@ export class RoomService {
   /**
    * Create room
    */
-  async createRoom(RoomId: string, Host: User): Promise<void> {
-    const room = await this.getRoomById(RoomId);
+  async createRoom(roomId: string, host: User): Promise<void> {
+    const room = await this.getRoomById(roomId);
     if (room === -1) {
-      await this.rooms.push({ RoomId, Host, Users: [Host] });
+      await this.rooms.push({ roomId, host, users: [host] });
     }
   }
 
   /**
    * Delete room
-   * @param RoomId
+   * @param roomId
    */
-  async removeRoom(RoomId: string): Promise<void> {
-    const findRoom = await this.getRoomById(RoomId);
+  async removeRoom(roomId: string): Promise<void> {
+    const findRoom = await this.getRoomById(roomId);
     if (findRoom !== -1) {
-      this.rooms = this.rooms.filter((room) => room.RoomId !== RoomId);
+      this.rooms = this.rooms.filter((room) => room.roomId !== roomId);
     }
   }
 
   /**
    * 获取房间所有者
    */
-  async getRoomHost(HostId: string): Promise<User> {
-    const roomIndex = await this.getRoomById(HostId);
-    return this.rooms[roomIndex].Host;
+  async getRoomhost(hostId: string): Promise<User> {
+    const roomIndex = await this.getRoomById(hostId);
+    return this.rooms[roomIndex].host;
   }
 
   /**
    * Get room by room Id
    */
-  async getRoomById(RoomId: string): Promise<number> {
-    const roomIndex = this.rooms.findIndex((room) => room?.RoomId === RoomId);
+  async getRoomById(roomId: string): Promise<number> {
+    const roomIndex = this.rooms.findIndex((room) => room?.roomId === roomId);
     return roomIndex;
   }
 
   /**
    * 加入房间
    */
-  async addUserToRoom(RoomId: string, user: User): Promise<void> {
-    const roomIndex = await this.getRoomById(RoomId);
+  async addUserToRoom(roomId: string, user: User): Promise<void> {
+    const roomIndex = await this.getRoomById(roomId);
     if (roomIndex !== -1) {
-      this.rooms[roomIndex].Users.push(user);
-      const Host = await this.getRoomHost(RoomId);
-      if (Host.UserId === user.UserId) {
-        this.rooms[roomIndex].Host.SocketId = user.SocketId;
+      this.rooms[roomIndex].users.push(user);
+      const host = await this.getRoomhost(roomId);
+      if (host.userId === user.userId) {
+        this.rooms[roomIndex].host.socketId = user.socketId;
       }
     } else {
-      await this.createRoom(RoomId, user);
+      await this.createRoom(roomId, user);
     }
   }
 
-  async findRoomsByUserSocketId(SocketId: string): Promise<Room[]> {
+  async findRoomsByUsersocketId(socketId: string): Promise<Room[]> {
     const filteredRooms = this.rooms.filter((room) => {
-      const found = room.Users.find((user) => user.SocketId === SocketId);
+      const found = room.users.find((user) => user.socketId === socketId);
       if (found) {
         return found;
       }
@@ -68,18 +68,18 @@ export class RoomService {
     return filteredRooms;
   }
 
-  async removeUserFromAllRooms(SocketId: string): Promise<void> {
-    const rooms = await this.findRoomsByUserSocketId(SocketId);
+  async removeUserFromAllRooms(socketId: string): Promise<void> {
+    const rooms = await this.findRoomsByUsersocketId(socketId);
     for (const room of rooms) {
-      await this.removeUserFromRoom(SocketId, room.RoomId);
+      await this.removeUserFromRoom(socketId, room.roomId);
     }
   }
 
-  async removeUserFromRoom(SocketId: string, RoomId: string): Promise<void> {
-    const room = await this.getRoomById(RoomId);
-    this.rooms[room].Users = this.rooms[room].Users.filter((user) => user.SocketId !== SocketId);
-    if (this.rooms[room].Users.length === 0) {
-      await this.removeRoom(RoomId);
+  async removeUserFromRoom(socketId: string, roomId: string): Promise<void> {
+    const room = await this.getRoomById(roomId);
+    this.rooms[room].users = this.rooms[room].users.filter((user) => user.socketId !== socketId);
+    if (this.rooms[room].users.length === 0) {
+      await this.removeRoom(roomId);
     }
   }
 

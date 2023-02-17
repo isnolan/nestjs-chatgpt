@@ -20,7 +20,7 @@ export class RoomController {
 
   @Get('get')
   async getRoom(@Query() query): Promise<Room> {
-    console.log(`->room:`, query.roomId);
+    // console.log(`->room:`, query.roomId);
     const rooms = await this.service.getRooms();
     const room = await this.service.getRoomById(query.roomId);
     return rooms[room];
@@ -36,10 +36,10 @@ export class RoomController {
    */
   @Post('create')
   async create(@Body() payload: CreateRoomDto) {
-    console.log(`->payload`, payload);
+    // console.log(`->payload`, payload);
     // Create Room
-    const { RoomId, UserId } = payload;
-    this.service.createRoom(RoomId, { UserId });
+    // const { RoomId, UserId } = payload;
+    // this.service.createRoom(RoomId, { userId });
 
     // Create Quene for Message
     const job = await this.messageQueue.add(payload.Supplier.Type, payload, {
@@ -48,7 +48,7 @@ export class RoomController {
       removeOnFail: true,
     });
 
-    return { code: 0 };
+    return { job: job.id };
   }
 
   /**

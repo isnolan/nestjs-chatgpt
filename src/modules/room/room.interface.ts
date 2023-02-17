@@ -1,12 +1,12 @@
 export interface User {
-  UserId: string;
-  SocketId?: string;
+  userId: string;
+  socketId?: string;
 }
 
 export interface Room {
-  RoomId: string;
-  Host: User;
-  Users: User[];
+  roomId: string;
+  host: User;
+  users: User[];
 }
 
 export interface Message {

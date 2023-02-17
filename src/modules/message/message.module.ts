@@ -23,6 +23,6 @@ import { RoomModule } from '../room/room.module';
   ],
   controllers: [MessageController],
   providers: [MessageService, MessageProcessor, MessageGateway],
-  exports: [MessageService],
+  exports: [MessageService, MessageGateway],
 })
 export class MessageModule {}

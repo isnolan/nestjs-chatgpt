@@ -1,69 +1,69 @@
+import { Queue } from 'bull';
+import { InjectQueue } from '@nestjs/bull';
 import {
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
   MessageBody,
-  WsResponse,
-  ConnectedSocket,
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
 } from '@nestjs/websockets';
-import { from, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 import { Server, Socket } from 'socket.io';
 import { ServerToClientEvents, ClientToServerEvents, Message, User } from '../room/room.interface';
 import { RoomService } from '../room/room.service';
 
 @WebSocketGateway({ cors: { origin: '*' } })
-export class MessageGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+export class MessageGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   public readonly server: Server = new Server<ServerToClientEvents, ClientToServerEvents>();
 
-  constructor(private readonly room: RoomService) {}
-
-  /**
-   * Node init
-   * Get node config from center server
-   */
-  afterInit() {
-    console.log(`->after init`);
-  }
-
-  @SubscribeMessage('events')
-  findAll(@ConnectedSocket() client: Socket, @MessageBody() data: any): Observable<WsResponse<number>> {
-    console.log(`->events:`, client.id, data);
-    return from([1, 2, 3]).pipe(map((item) => ({ event: 'events', data: item })));
-  }
-
-  @SubscribeMessage('identity')
-  async identity(@MessageBody() data: number): Promise<number> {
-    console.log(`->identity:`, data + 1);
-    return data + 1;
-  }
+  constructor(
+    @InjectQueue('message')
+    private readonly messageQueue: Queue,
+    private readonly room: RoomService,
+  ) {}
 
   /**
    * 广播消息
    * @param payload
    */
-  @SubscribeMessage('events')
-  handleQuestionEvent(@MessageBody() payload: Message) {
+  @SubscribeMessage('question')
+  async handleQuestionEvent(@MessageBody() payload: any) {
     // 接收请求，并广播到房间所有人
-    this.server.to(payload.RoomId).emit('events', payload); // broadcast messages
-    return payload;
+    // this.server.to(payload.RoomId).emit('question', payload); // broadcast messages
+    // console.log(`->events:`, payload);
+    // ready to get supplier
+    const job = await this.messageQueue.add('chatgpt', payload, {
+      attempts: 2,
+      removeOnComplete: true,
+      removeOnFail: true,
+    });
+
+    return { id: job.id, name: job.name };
   }
 
   /**
    * Join room
+   * 加入房间，获取远程配置
    * @param payload
    */
+  // @UseGuards(AuthGuard('jwt'))
   @SubscribeMessage('join_room')
-  async handleSetClientDataEvent(@MessageBody() payload: { RoomId: string; User: User }) {
-    if (payload.User.SocketId) {
-      //
-      await this.server.in(payload.User.SocketId).socketsJoin(payload.RoomId);
-      await this.room.addUserToRoom(payload.RoomId, payload.User);
+  async handleSetClientDataEvent(@MessageBody() payload: any) {
+    if (payload.socketId) {
+      await this.server.in(payload.socketId).socketsJoin(payload.roomId);
+      await this.room.addUserToRoom(payload.roomId, { userId: payload.userId, socketId: payload.socketId });
+
+      // ready to get supplier
+      await this.messageQueue.add('supplier', payload, {
+        attempts: 2,
+        removeOnComplete: true,
+        removeOnFail: true,
+      });
     }
+    console.log(`->Join Room:`, payload);
+    return { message: `Join room: ${payload.roomId}` };
   }
 
   // Will fire when a client connects to the server
