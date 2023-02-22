@@ -12,6 +12,7 @@ const importDynamic = new Function('modulePath', 'return import(modulePath)');
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 @Processor('message')
 export class MessageProcessor {
+  private readonly draft: any;
   private readonly proxy: any;
   private readonly logger = new Logger('message');
   private api: any;
@@ -21,6 +22,7 @@ export class MessageProcessor {
     @InjectRedis() private readonly redis: Redis,
     private readonly events: MessageGateway,
   ) {
+    this.draft = config.get('draft');
     this.proxy = config.get('proxy');
 
     this.initGPT();
@@ -117,7 +119,7 @@ export class MessageProcessor {
         const key = `supplier_${roomId}`;
         const isCached = await this.redis.get(key);
         if (!isCached) {
-          const supplier = await fetch(`http://127.0.0.1:3000/conversation/supplier`, {
+          const supplier = await fetch(`${this.draft}/conversation/supplier`, {
             mode: 'cors',
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
