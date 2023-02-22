@@ -1,4 +1,4 @@
-FROM node:19.6.1-slim
+FROM node:lts-alpine
 
 # Essentials
 # RUN apk add -U tzdata
@@ -8,47 +8,22 @@ FROM node:19.6.1-slim
 # production
 ENV NODE_ENV=production
 # We don't need the standalone Chromium
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
-# Install Chrome
-# RUN apk update && apk upgrade 
-# RUN apk add dpkg wget 
-# RUN dpkg --add-architecture amd64
-# RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-# RUN dpkg -i --force-architecture google-chrome-stable_current_amd64.deb
-# RUN echo "Chrome: " && google-chrome --version
-
+# ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
 # Install Chromium
-# RUN apk update && apk add --no-cache nmap && \
-#     echo @edge http://nl.alpinelinux.org/alpine/edge/community >> /etc/apk/repositories && \
-#     echo @edge http://nl.alpinelinux.org/alpine/edge/main >> /etc/apk/repositories && \
-#     apk update && \
-#     apk add --no-cache \
-#       chromium \
-#       harfbuzz \
-#       "freetype>2.8" \
-#       ttf-freefont \
-#       nss
-# # Set the DISPLAY environment variable & Start xvfb
-# ENV DISPLAY=:99
-# RUN Xvfb $DISPLAY -screen 0 1920x1080x16 &
-
-RUN apt-get update && apt-get install -y \
-  wget \
-  libgconf-2-4 \
-  libnss3 \
-  libxss1 \
-  libasound2 \
-  libatk-bridge2.0-0 \
-  libgtk-3-0 \
-  xvfb
-RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
-  && dpkg -i google-chrome-stable_current_amd64.deb \
-  && apt-get -fy install
-# Set the DISPLAY environment variable
+RUN apk update && apk add --no-cache nmap && \
+    echo @edge http://nl.alpinelinux.org/alpine/edge/community >> /etc/apk/repositories && \
+    echo @edge http://nl.alpinelinux.org/alpine/edge/main >> /etc/apk/repositories && \
+    apk update && \
+    apk add --no-cache \
+      chromium \
+      harfbuzz \
+      "freetype>2.8" \
+      ttf-freefont \
+      nss
+# Set the DISPLAY environment variable & Start xvfb
 ENV DISPLAY=:99
 RUN Xvfb $DISPLAY -screen 0 1920x1080x16 &
-# RUN apt-get update
-# RUN apt-get install -y chromium
+
 
 # workdir
 WORKDIR /app
