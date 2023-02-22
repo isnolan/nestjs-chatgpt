@@ -31,7 +31,7 @@ export class MessageProcessor {
     this.api = new ChatGPTAPIBrowser({
       debug: false,
       minimize: false,
-      // proxyServer: '192.168.2.6:7890',
+      proxyServer: this.proxy,
     });
     // await this.api.initSession();
   }
