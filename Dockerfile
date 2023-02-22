@@ -1,25 +1,32 @@
 FROM node:lts-alpine
 
 # Essentials
-# RUN apk add -U tzdata
-# ENV TZ="Asia/Shanghai"
-# RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+RUN apk add -U tzdata
+ENV TZ="Asia/Shanghai"
+RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
 # production
 ENV NODE_ENV=production
 # We don't need the standalone Chromium
 # ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
 # Install Chromium
-RUN apk update && apk add --no-cache nmap && \
-    echo @edge http://nl.alpinelinux.org/alpine/edge/community >> /etc/apk/repositories && \
-    echo @edge http://nl.alpinelinux.org/alpine/edge/main >> /etc/apk/repositories && \
-    apk update && \
-    apk add --no-cache \
+RUN apk add --no-cache \
       chromium \
+      nss \
+      freetype \
       harfbuzz \
-      "freetype>2.8" \
-      ttf-freefont \
-      nss
+      ca-certificates \
+      ttf-freefont 
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+# Add user so we don't need --no-sandbox.
+RUN addgroup -S pptruser && adduser -S -G pptruser pptruser \
+    && mkdir -p /home/pptruser/Downloads /app \
+    && chown -R pptruser:pptruser /home/pptruser \
+    && chown -R pptruser:pptruser /app
+
+# Run everything after as non-privileged user.
+USER pptruser
+
 # Set the DISPLAY environment variable & Start xvfb
 ENV DISPLAY=:99
 RUN Xvfb $DISPLAY -screen 0 1920x1080x16 &
