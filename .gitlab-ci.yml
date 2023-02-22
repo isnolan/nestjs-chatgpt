@@ -10,9 +10,9 @@ cache:
 
 stages:
   - build
-  # - deploy
+  - deploy
   - deploy-qcloud
-  # - publish
+  - publish
 
 build:
   stage: build
@@ -27,20 +27,20 @@ build:
     paths:
       - dist
 
-# deploy:
-#   stage: deploy
-#   image: docker:20.10.17-dind
-#   tags:
-#     - node.js
-#   variables:
-#     REGISTRY_PATH: $CI_REGISTRY_IMAGE:$CI_PIPELINE_ID
-#     IMAGE_ID: $(docker images | grep $CI_REGISTRY/$CI_PROJECT_PATH\/$IMAGE_NAME | awk '{print $3}')
-#   script:
-#     # - export
-#     - docker build -t $REGISTRY_PATH .
-#     - echo "$REGISTRY_PWD" | docker login --username $REGISTRY_USER $CI_REGISTRY --password-stdin
-#     - docker push $REGISTRY_PATH
-#     - docker logout
+deploy:
+  stage: deploy
+  image: docker:20.10.17-dind
+  tags:
+    - node.js
+  variables:
+    REGISTRY_PATH: $CI_REGISTRY_IMAGE:$CI_PIPELINE_ID
+    IMAGE_ID: $(docker images | grep $CI_REGISTRY/$CI_PROJECT_PATH\/$IMAGE_NAME | awk '{print $3}')
+  script:
+    # - export
+    - docker build -t $REGISTRY_PATH .
+    - echo "$REGISTRY_PWD" | docker login --username $REGISTRY_USER $CI_REGISTRY --password-stdin
+    - docker push $REGISTRY_PATH
+    - docker logout
 
 deploy-qcloud:
   stage: deploy-qcloud
@@ -56,12 +56,13 @@ deploy-qcloud:
     - echo "$REGISTRY_QCLOUD_PWD" | docker login --username $REGISTRY_QCLOUD_USER $REGISTRY_QCLOUD_URL --password-stdin
     - docker push $REGISTRY_PATH
     - docker logout
-# publish:
-#   stage: publish
-#   tags:
-#     - shell
-#   variables:
-#     REGISTRY_PATH: $CI_REGISTRY_IMAGE:$CI_PIPELINE_ID
-#   script:
-#     # - export
-#     - curl -X PUT -H "content-type:application/json" -H "Cookie:KuboardUsername=${KuboardUsername};KuboardAccessKey=${KuboardAccessKey}" -d '{"kind":"deployments","namespace":"draft","name":"'${CI_PROJECT_NAME}'","images":{"'${CI_REGISTRY_IMAGE}'":"'${REGISTRY_PATH}'"}}' https://kuboard.devflow.ltd/kuboard-api/cluster/Dev/kind/CICDApi/admin/resource/updateImageTag
+
+publish:
+  stage: publish
+  tags:
+    - shell
+  variables:
+    REGISTRY_PATH: $CI_REGISTRY_IMAGE:$CI_PIPELINE_ID
+  script:
+    # - export
+    - curl -X PUT -H "content-type:application/json" -H "Cookie:KuboardUsername=${KuboardUsername};KuboardAccessKey=${KuboardAccessKey}" -d '{"kind":"deployments","namespace":"draft","name":"'${CI_PROJECT_NAME}'","images":{"'${CI_REGISTRY_IMAGE}'":"'${REGISTRY_PATH}'"}}' https://kuboard.devflow.ltd/kuboard-api/cluster/Dev/kind/CICDApi/admin/resource/updateImageTag
