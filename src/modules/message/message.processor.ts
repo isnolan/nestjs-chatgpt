@@ -13,7 +13,6 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 @Processor('message')
 export class MessageProcessor {
   private readonly proxy: any;
-  private readonly chatgpt: any;
   private readonly logger = new Logger('message');
   private api: any;
 
@@ -23,19 +22,13 @@ export class MessageProcessor {
     private readonly events: MessageGateway,
   ) {
     this.proxy = config.get('proxy');
-    this.chatgpt = config.get('chatgpt');
 
     this.initGPT();
-
-    // setInterval(() => {
-    //   console.warn(this.emit('30', 'events', 'success'));
-    // }, 3000);
   }
 
   async initGPT() {
     const { ChatGPTAPIBrowser } = await importDynamic('@yhostc/chatgpt');
     this.api = new ChatGPTAPIBrowser({
-      ...this.chatgpt,
       debug: false,
       minimize: false,
       // proxyServer: '192.168.2.6:7890',
