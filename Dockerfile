@@ -28,7 +28,7 @@ RUN Xvfb $DISPLAY -screen 0 1920x1080x16 &
 # workdir
 WORKDIR /app
 ADD dist/ ./ 
-COPY .env.sample ./
+# COPY .env.sample ./
 COPY package*.json ./
 
 # RUN npm set-script prepare ''
