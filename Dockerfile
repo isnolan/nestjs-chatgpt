@@ -1,4 +1,4 @@
-FROM node:lts-slim
+FROM node:19.6.1-slim
 
 # Essentials
 # RUN apk add -U tzdata

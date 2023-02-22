@@ -46,7 +46,7 @@ deploy-qcloud:
   stage: deploy-qcloud
   image: docker:20.10.17-dind
   tags:
-    - node.js
+    - chrome
   variables:
     REGISTRY_PATH: $REGISTRY_QCLOUD_URL/$CI_PROJECT_PATH:$CI_PIPELINE_ID
     IMAGE_ID: $(docker images | grep $CI_REGISTRY/$CI_PROJECT_PATH\/$IMAGE_NAME | awk '{print $3}')
