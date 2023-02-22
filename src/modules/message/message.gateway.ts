@@ -7,10 +7,9 @@ import {
   MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
-  OnGatewayInit,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { ServerToClientEvents, ClientToServerEvents, Message, User } from '../room/room.interface';
+import { ServerToClientEvents, ClientToServerEvents } from '../room/room.interface';
 import { RoomService } from '../room/room.service';
 
 @WebSocketGateway({ cors: { origin: '*' } })
@@ -25,15 +24,13 @@ export class MessageGateway implements OnGatewayConnection, OnGatewayDisconnect 
   ) {}
 
   /**
-   * 广播消息
+   * 提问
    * @param payload
    */
   @SubscribeMessage('question')
   async handleQuestionEvent(@MessageBody() payload: any) {
     // 接收请求，并广播到房间所有人
     // this.server.to(payload.RoomId).emit('question', payload); // broadcast messages
-    // console.log(`->events:`, payload);
-    // ready to get supplier
     const job = await this.messageQueue.add('chatgpt', payload, {
       attempts: 2,
       removeOnComplete: true,

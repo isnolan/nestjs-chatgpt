@@ -70,8 +70,8 @@ export class MessageProcessor {
         const supplier = JSON.parse(await this.redis.get(`supplier_${roomId}`));
         // Auto cookie signin from SupplierId
         await this.api.initSession({
-          email: supplier.email,
-          password: supplier.password,
+          email: supplier.User,
+          password: supplier.Password,
           cookies: JSON.parse(supplier.Authorisation),
         });
 
@@ -115,7 +115,7 @@ export class MessageProcessor {
    */
   @Process('supplier')
   async supplier(job: Job<unknown>) {
-    // console.log(`->supplier.job:`, job.data);
+    console.log(`->supplier.job:`, job.data);
     // Get Local Conversation and Message ID
     const { roomId, userId } = job.data as any;
     // const that = this;
@@ -130,7 +130,7 @@ export class MessageProcessor {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ roomId, userId }),
           }).then((res) => res.json());
-          // console.log(`->supplier`, supplier);
+          console.log(`->supplier`, supplier);
 
           // Cache to redis
           await this.redis.set(key, JSON.stringify(supplier), 'EX', 3600);
