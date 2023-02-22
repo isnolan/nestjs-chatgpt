@@ -54,7 +54,7 @@ export class MessageProcessor {
   async transfer(job: Job<unknown>) {
     console.log(`->message.job:`, job.data);
     // Get Local Conversation and Message ID
-    const { roomId, question, supplierReplyId, conversationId } = job.data as any;
+    const { roomId, question, supplierReplyId, supplierConversationId } = job.data as any;
     const messageId = uuidv4();
 
     // const that = this;
@@ -73,8 +73,8 @@ export class MessageProcessor {
         await sleep(5000);
 
         const result = await this.api.sendMessage(question, {
-          supplierReplyId,
-          conversationId,
+          parentMessageId: supplierReplyId,
+          conversationId: supplierConversationId,
           messageId,
           onProgress: (res) => {
             // Send the progress to room

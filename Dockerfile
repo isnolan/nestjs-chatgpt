@@ -13,7 +13,6 @@ ENV NODE_ENV=production
 RUN apk add --no-cache \
       chromium \
       nss \
-      Xvfb \
       freetype \
       harfbuzz \
       ca-certificates \
