@@ -18,7 +18,7 @@ RUN apk add --no-cache \
       ca-certificates \
       ttf-freefont 
 RUN apk add --no-cache Xvfb
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/lib/chromium/chrome
 
 
 # Set the DISPLAY environment variable & Start xvfb
