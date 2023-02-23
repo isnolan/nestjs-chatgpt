@@ -5,10 +5,6 @@ RUN apk add -U tzdata
 ENV TZ="Asia/Shanghai"
 RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
-# production
-ENV NODE_ENV=production
-# We don't need the standalone Chromium
-# ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
 # Install Chromium
 RUN apk add --no-cache \
       chromium \
@@ -16,13 +12,11 @@ RUN apk add --no-cache \
       freetype \
       harfbuzz \
       ca-certificates \
-      ttf-freefont 
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/lib/chromium/chrome
-
+      ttf-freefont \
+      xvfb
 
 # Set the DISPLAY environment variable & Start xvfb
-ENV DISPLAY=:10
-RUN Xvfb $DISPLAY -screen 0 1920x1080x16 &
+RUN Xvfb :10 -screen 0 1920x1080x16 &
 
 
 # workdir
@@ -31,9 +25,10 @@ ADD dist/ ./
 COPY .env.sample ./.env
 COPY package*.json ./
 
-# RUN npm set-script prepare ''
+# production
+ENV NODE_ENV=production
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/lib/chromium/chrome
 RUN npm install --registry=https://registry.npm.taobao.org --ignore-scripts
-# RUN apk update && apk add bash
 
 EXPOSE 3000
 ENTRYPOINT ["node", "main.js"]
