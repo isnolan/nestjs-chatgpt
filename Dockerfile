@@ -1,9 +1,9 @@
 FROM node:18.14.2
 
 # Essentials
-RUN apk add -U tzdata
-ENV TZ="Asia/Shanghai"
-RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+# RUN apk add -U tzdata
+# ENV TZ="Asia/Shanghai"
+# RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
 # production
 ENV NODE_ENV=production
@@ -13,6 +13,7 @@ ENV NODE_ENV=production
 # RUN apk add --no-cache \
 #       chromium \
 #       nss \
+#       Xvfb \
 #       freetype \
 #       harfbuzz \
 #       ca-certificates \
