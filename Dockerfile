@@ -13,7 +13,8 @@ RUN apk add --no-cache \
       harfbuzz \
       ca-certificates \
       ttf-freefont \
-      xvfb
+      xvfb \
+      xvfb-run
 
 # workdir
 WORKDIR /app
@@ -22,9 +23,8 @@ COPY .env.sample ./.env
 COPY package*.json ./
 
 # Set the DISPLAY environment variable & Start xvfb
-RUN echo "Xvfb :10 -screen 0 1920x1080x16 & " > ./xvfb.sh
-RUN chmod a+x ./xvfb.sh
-RUN ./xvfb.sh
+# RUN Xvfb :10 -screen 0 1920x1080x16 & 
+RUN xvfb-run --auto-servernum --server-args=-screen 0 1920x1080x16 & 
 
 # production
 ENV NODE_ENV=production
