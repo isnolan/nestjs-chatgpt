@@ -17,7 +17,7 @@ RUN apk add --no-cache \
       harfbuzz \
       ca-certificates \
       ttf-freefont 
-RUN apk add --no-cache Xvfb
+RUN apk add --no-cache xvfb
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/lib/chromium/chrome
 
 
