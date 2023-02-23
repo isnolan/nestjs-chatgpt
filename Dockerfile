@@ -13,8 +13,7 @@ RUN apk add --no-cache \
       harfbuzz \
       ca-certificates \
       ttf-freefont \
-      xvfb \
-      xvfb-run
+      xvfb 
 
 # workdir
 WORKDIR /app
@@ -24,7 +23,6 @@ COPY package*.json ./
 
 # Set the DISPLAY environment variable & Start xvfb
 # RUN Xvfb :10 -screen 0 1920x1080x16 & 
-RUN xvfb-run --auto-servernum --server-args=-screen 0 1920x1080x16 & 
 
 # production
 ENV NODE_ENV=production
@@ -34,4 +32,4 @@ RUN npm install --registry=https://registry.npm.taobao.org --ignore-scripts
 
 
 EXPOSE 3000
-ENTRYPOINT ["node", "main.js"]
+ENTRYPOINT ["RUN Xvfb :10 -screen 0 1920x1080x16 & ", ";" ,"node main.js"]
