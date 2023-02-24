@@ -22,13 +22,13 @@ COPY .env.sample ./.env
 COPY package*.json ./
 
 # Set the DISPLAY environment variable & Start xvfb
-RUN Xvfb :10 -screen 0 1920x1080x16 & 
+# RUN Xvfb :10 -screen 0 1920x1080x16 & 
 
 # production
 ENV NODE_ENV=production
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/lib/chromium/chrome
 RUN npm install --registry=https://registry.npm.taobao.org --ignore-scripts
-
+RUN chmod a+x ./startup.sh
 
 EXPOSE 3000
-ENTRYPOINT ["node", "main.js"]
+ENTRYPOINT ["startup.sh"]
