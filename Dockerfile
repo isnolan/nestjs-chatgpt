@@ -20,6 +20,7 @@ WORKDIR /app
 ADD dist/ ./ 
 COPY .env.sample ./.env
 COPY package*.json ./
+COPY startup.sh ./
 
 # Set the DISPLAY environment variable & Start xvfb
 # RUN Xvfb :10 -screen 0 1920x1080x16 & 
@@ -28,7 +29,7 @@ COPY package*.json ./
 ENV NODE_ENV=production
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/lib/chromium/chrome
 RUN npm install --registry=https://registry.npm.taobao.org --ignore-scripts
-RUN chmod a+x /app/startup.sh
+RUN chmod a+x ./startup.sh
 
 EXPOSE 3000
-ENTRYPOINT ["/app/startup.sh"]
+ENTRYPOINT ["./startup.sh"]
