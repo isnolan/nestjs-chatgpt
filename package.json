@@ -39,7 +39,7 @@
     "@nestjs/typeorm": "^9.0.1",
     "@nestjs/websockets": "^9.3.8",
     "@socket.io/redis-adapter": "^8.1.0",
-    "@yhostc/chatgpt": "^0.2.8",
+    "@yhostc/chatgpt": "^0.3.0",
     "bull": "^4.10.3",
     "mysql2": "^3.1.2",
     "nest-winston": "^1.7.0",

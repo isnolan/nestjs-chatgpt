@@ -51,13 +51,6 @@ export class MessageGateway implements OnGatewayConnection, OnGatewayDisconnect 
     if (payload.socketId) {
       await this.server.in(payload.socketId).socketsJoin(payload.roomId);
       await this.room.addUserToRoom(payload.roomId, { userId: payload.userId, socketId: payload.socketId });
-
-      // ready to get supplier
-      await this.messageQueue.add('supplier', payload, {
-        attempts: 2,
-        removeOnComplete: true,
-        removeOnFail: true,
-      });
     }
     console.log(`->Join Room:`, payload);
     return { message: `Join room: ${payload.roomId}` };

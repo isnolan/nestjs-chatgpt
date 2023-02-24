@@ -1,7 +1,9 @@
-import { Job } from 'bull';
+import * as fs from 'fs';
 import Redis from 'ioredis';
+import { Job, Queue } from 'bull';
 import { v4 as uuidv4 } from 'uuid';
 import { Logger } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bull';
 import { ConfigService } from '@nestjs/config';
 import { InjectRedis } from '@liaoliaots/nestjs-redis';
 import { Process, Processor, OnQueueActive, OnGlobalQueueCompleted } from '@nestjs/bull';
@@ -9,7 +11,7 @@ import { Process, Processor, OnQueueActive, OnGlobalQueueCompleted } from '@nest
 import { MessageGateway } from './message.gateway';
 
 const importDynamic = new Function('modulePath', 'return import(modulePath)');
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+// const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 @Processor('message')
 export class MessageProcessor {
   private readonly draft: any;
@@ -20,6 +22,8 @@ export class MessageProcessor {
   constructor(
     private readonly config: ConfigService,
     @InjectRedis() private readonly redis: Redis,
+    @InjectQueue('message')
+    private readonly messageQueue: Queue,
     private readonly events: MessageGateway,
   ) {
     this.draft = config.get('draft');
@@ -28,14 +32,31 @@ export class MessageProcessor {
     this.initGPT();
   }
 
+  /**
+   * 初始化 ChatGPT 节点
+   */
   async initGPT() {
     const { ChatGPTAPIBrowser } = await importDynamic('@yhostc/chatgpt');
+
+    // 获取账号配置
+    const supplier = await fetch(`${this.draft}/supplier/distribute`, {
+      mode: 'cors',
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: '1234567890' }),
+    }).then((res) => res.json());
+    console.log(`[supplier]`, supplier);
     this.api = new ChatGPTAPIBrowser({
+      email: supplier.User,
+      password: supplier.Password,
+      cookies: JSON.parse(supplier.Authorisation),
       debug: false,
       minimize: false,
       proxyServer: this.proxy,
     });
-    // await this.api.initSession();
+    const cookies = await this.api.initSession();
+    fs.writeFileSync('./cookies.json', JSON.stringify(cookies));
+    console.log(`->init chatgpt`);
   }
 
   @OnQueueActive()
@@ -54,24 +75,12 @@ export class MessageProcessor {
   async transfer(job: Job<unknown>) {
     console.log(`->message.job:`, job.data);
     // Get Local Conversation and Message ID
-    const { roomId, question, supplierReplyId, supplierConversationId } = job.data as any;
+    const { roomId, userId, question, supplierReplyId, supplierConversationId } = job.data as any;
     const messageId = uuidv4();
 
     // const that = this;
     return new Promise(async (resolve, reject) => {
       try {
-        // console.log(JSON.parse(await this.redis.get(`supplier_${roomId}`)));
-        // Get authorisation from cache
-        const supplier = JSON.parse(await this.redis.get(`supplier_${roomId}`));
-        // Auto cookie signin from SupplierId
-        await this.api.initSession({
-          email: supplier.User,
-          password: supplier.Password,
-          cookies: JSON.parse(supplier.Authorisation),
-        });
-
-        await sleep(5000);
-
         const result = await this.api.sendMessage(question, {
           parentMessageId: supplierReplyId,
           conversationId: supplierConversationId,
@@ -90,11 +99,22 @@ export class MessageProcessor {
         });
         // console.log(`->result:`);
         // // Send the result to room
-        this.events.server.to(roomId).emit('reply', {
+        const payload = {
+          roomId,
+          userId,
           questionId: messageId,
+          question,
           reply: result.response,
           supplierReplyId: result?.messageId,
           supplierConversationId: result?.conversationId,
+        };
+        this.events.server.to(roomId).emit('reply', payload);
+
+        // ready to keep archives
+        await this.messageQueue.add('archives', payload, {
+          attempts: 3,
+          removeOnComplete: true,
+          removeOnFail: true,
         });
 
         resolve({});
@@ -106,32 +126,27 @@ export class MessageProcessor {
   }
 
   /**
-   * ChatGPT Process
+   * KeepArchives
+   * keep archives to business server
    */
-  @Process('supplier')
-  async supplier(job: Job<unknown>) {
-    console.log(`->supplier.job:`, job.data);
-    // Get Local Conversation and Message ID
-    const { roomId, userId } = job.data as any;
-    // const that = this;
+  @Process('archives')
+  async archives(job: Job<unknown>) {
+    console.log(`->archives.job:`, job.data);
     return new Promise(async (resolve, reject) => {
       try {
-        const key = `supplier_${roomId}`;
-        const isCached = await this.redis.get(key);
-        if (!isCached) {
-          const supplier = await fetch(`${this.draft}/conversation/supplier`, {
-            mode: 'cors',
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ roomId, userId }),
-          }).then((res) => res.json());
-          console.log(`->supplier`, supplier);
+        const { status } = await fetch(`${this.draft}/message/archives`, {
+          mode: 'cors',
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(job.data),
+        });
+        console.log(`[archives]`, status);
 
-          // Cache to redis
-          await this.redis.set(key, JSON.stringify(supplier), 'EX', 3600);
+        if (status === 200) {
+          resolve({});
+          return;
         }
-
-        resolve({});
+        reject(status);
       } catch (err) {
         console.warn(err);
         reject(err);
