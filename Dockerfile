@@ -28,7 +28,7 @@ COPY package*.json ./
 ENV NODE_ENV=production
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/lib/chromium/chrome
 RUN npm install --registry=https://registry.npm.taobao.org --ignore-scripts
-RUN chmod a+x ./startup.sh
+RUN chmod a+x /app/startup.sh
 
 EXPOSE 3000
-ENTRYPOINT ["startup.sh"]
+ENTRYPOINT ["/app/startup.sh"]
