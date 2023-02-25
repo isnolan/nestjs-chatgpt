@@ -14,7 +14,7 @@ const importDynamic = new Function('modulePath', 'return import(modulePath)');
 // const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 @Processor('message')
 export class MessageProcessor {
-  private readonly draft: any;
+  private readonly endpoint: any;
   private readonly proxy: any;
   private readonly logger = new Logger('message');
   private api: any;
@@ -26,7 +26,7 @@ export class MessageProcessor {
     private readonly messageQueue: Queue,
     private readonly events: MessageGateway,
   ) {
-    this.draft = config.get('draft');
+    this.endpoint = config.get('endpoint');
     this.proxy = config.get('proxy');
 
     this.initGPT();
@@ -39,11 +39,11 @@ export class MessageProcessor {
     const { ChatGPTAPIBrowser } = await importDynamic('@yhostc/chatgpt');
 
     // 获取账号配置
-    const supplier = await fetch(`${this.draft}/supplier/distribute`, {
+    const supplier = await fetch(`${this.endpoint.draft}/supplier/distribute`, {
       mode: 'cors',
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: '1234567890' }),
+      body: JSON.stringify({ token: '1234567890', Id: this.endpoint.epid }),
     }).then((res) => res.json());
     console.log(`[supplier]`, supplier);
     this.api = new ChatGPTAPIBrowser({
@@ -64,8 +64,8 @@ export class MessageProcessor {
     console.log(`Processing job ${job.id} of type ${job.name} with data ${job.data}...`);
   }
 
-  private emit(roomId, event: string, payload: any) {
-    return this.events.server.to(roomId).emit(event, payload);
+  private emit(conversationId, event: string, payload: any) {
+    return this.events.server.to(conversationId).emit(event, payload);
   }
 
   /**
@@ -75,9 +75,9 @@ export class MessageProcessor {
   async transfer(job: Job<unknown>) {
     console.log(`->message.job:`, job.data);
     // Get Local Conversation and Message ID
-    const { roomId, userId, question, supplierReplyId, supplierConversationId } = job.data as any;
+    const { conversationId, userId, question, supplierReplyId, supplierConversationId } = job.data as any;
     const messageId = uuidv4();
-
+    // console.log(`[chatgpt]`, )
     // const that = this;
     return new Promise(async (resolve, reject) => {
       try {
@@ -87,9 +87,9 @@ export class MessageProcessor {
           messageId,
           onProgress: (res) => {
             // Send the progress to room
-            this.emit(roomId, 'events', res?.response);
+            this.emit(conversationId, 'events', res?.response);
             console.log('->progress:', res?.response);
-            this.events.server.to(roomId).emit('reply', {
+            this.events.server.to(conversationId).emit('reply', {
               questionId: messageId,
               reply: res.response,
               supplierReplyId: res?.messageId,
@@ -100,7 +100,7 @@ export class MessageProcessor {
         // console.log(`->result:`);
         // // Send the result to room
         const payload = {
-          roomId,
+          conversationId,
           userId,
           questionId: messageId,
           question,
@@ -108,15 +108,13 @@ export class MessageProcessor {
           supplierReplyId: result?.messageId,
           supplierConversationId: result?.conversationId,
         };
-        this.events.server.to(roomId).emit('reply', payload);
-
+        this.events.server.to(conversationId).emit('reply', payload);
         // ready to keep archives
         await this.messageQueue.add('archives', payload, {
           attempts: 3,
           removeOnComplete: true,
           removeOnFail: true,
         });
-
         resolve({});
       } catch (err) {
         console.warn(err);
@@ -134,7 +132,7 @@ export class MessageProcessor {
     console.log(`->archives.job:`, job.data);
     return new Promise(async (resolve, reject) => {
       try {
-        const { status } = await fetch(`${this.draft}/message/archives`, {
+        const { status } = await fetch(`${this.endpoint.draft}/message/archives`, {
           mode: 'cors',
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

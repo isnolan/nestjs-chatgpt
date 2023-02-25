@@ -1,7 +1,10 @@
 // 导出配置
 export default () => {
   return {
-    draft: process.env.DRAFT_SERVER,
+    endpoint: {
+      epid: process.env.DRAFT_EPID,
+      draft: process.env.DRAFT_SERVER,
+    },
 
     redis: {
       host: process.env.REDIS_HOST,

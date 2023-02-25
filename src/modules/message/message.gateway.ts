@@ -9,18 +9,15 @@ import {
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { ServerToClientEvents, ClientToServerEvents } from '../room/room.interface';
-import { RoomService } from '../room/room.service';
 
 @WebSocketGateway({ cors: { origin: '*' } })
 export class MessageGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
-  public readonly server: Server = new Server<ServerToClientEvents, ClientToServerEvents>();
+  public readonly server: Server = new Server();
 
   constructor(
     @InjectQueue('message')
     private readonly messageQueue: Queue,
-    private readonly room: RoomService,
   ) {}
 
   /**
@@ -30,7 +27,7 @@ export class MessageGateway implements OnGatewayConnection, OnGatewayDisconnect 
   @SubscribeMessage('question')
   async handleQuestionEvent(@MessageBody() payload: any) {
     // 接收请求，并广播到房间所有人
-    // this.server.to(payload.RoomId).emit('question', payload); // broadcast messages
+    // this.server.to(payload.conversationId).emit('question', payload); // broadcast messages
     const job = await this.messageQueue.add('chatgpt', payload, {
       attempts: 2,
       removeOnComplete: true,
@@ -49,11 +46,10 @@ export class MessageGateway implements OnGatewayConnection, OnGatewayDisconnect 
   @SubscribeMessage('join_room')
   async handleSetClientDataEvent(@MessageBody() payload: any) {
     if (payload.socketId) {
-      await this.server.in(payload.socketId).socketsJoin(payload.roomId);
-      await this.room.addUserToRoom(payload.roomId, { userId: payload.userId, socketId: payload.socketId });
+      await this.server.in(payload.socketId).socketsJoin(payload.conversationId);
     }
     console.log(`->Join Room:`, payload);
-    return { message: `Join room: ${payload.roomId}` };
+    return { message: `Join room: ${payload.conversationId}` };
   }
 
   // Will fire when a client connects to the server
@@ -63,7 +59,6 @@ export class MessageGateway implements OnGatewayConnection, OnGatewayDisconnect 
 
   // Will fire when a client disconnects from the server
   async handleDisconnect(socket: Socket): Promise<void> {
-    await this.room.removeUserFromAllRooms(socket.id);
     console.log(`Socket disconnected: ${socket.id}`);
   }
 }
