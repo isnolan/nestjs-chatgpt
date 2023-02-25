@@ -91,7 +91,7 @@ export class MessageProcessor {
             console.log('->progress:', res?.response);
             this.events.server.to(conversationId).emit('reply', {
               questionId: messageId,
-              reply: res.response,
+              reply: res.response.replace(/^\s+|\s+$/g, ''),
               supplierReplyId: res?.messageId,
               supplierConversationId: res?.conversationId,
             });
@@ -104,7 +104,7 @@ export class MessageProcessor {
           userId,
           questionId: messageId,
           question,
-          reply: result.response,
+          reply: result.response.replace(/^\s+|\s+$/g, ''),
           supplierReplyId: result?.messageId,
           supplierConversationId: result?.conversationId,
         };
