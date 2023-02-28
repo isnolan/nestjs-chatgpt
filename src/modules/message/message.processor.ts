@@ -52,7 +52,7 @@ export class MessageProcessor {
       cookies: JSON.parse(supplier.Authorisation),
       debug: false,
       minimize: false,
-      // proxyServer: this.proxy,
+      proxyServer: this.proxy,
     });
     const cookies = await this.api.initSession();
     fs.writeFileSync('./cookies.json', JSON.stringify(cookies));
