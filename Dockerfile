@@ -18,7 +18,6 @@ RUN apk add --no-cache \
 # workdir
 WORKDIR /app
 ADD dist/ ./ 
-COPY .env.sample ./.env
 COPY package*.json ./
 COPY startup.sh ./
 
