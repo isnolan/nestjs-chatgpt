@@ -46,14 +46,25 @@ export class MessageProcessor {
       body: JSON.stringify({ token: '1234567890', Id: this.endpoint.epid }),
     }).then((res) => res.json());
     console.log(`[supplier]`, supplier);
-    this.api = new ChatGPTAPIBrowser({
+
+    const options: any = {
       email: supplier.User,
       password: supplier.Password,
-      cookies: JSON.parse(supplier.Authorisation),
-      debug: false,
-      minimize: false,
-      proxyServer: this.proxy,
-    });
+    };
+    // cookies
+    if (supplier.Authorisation) {
+      options.cookies = JSON.parse(supplier.Authorisation);
+    }
+    // proxy server
+    if (this.proxy) {
+      options.proxyServer = this.proxy;
+    }
+    // plus account
+    if (supplier.IsPlus) {
+      options.isProAccount = true;
+    }
+
+    this.api = new ChatGPTAPIBrowser(options);
     const cookies = await this.api.initSession();
     fs.writeFileSync('./cookies.json', JSON.stringify(cookies));
     console.log(`->init chatgpt`);
