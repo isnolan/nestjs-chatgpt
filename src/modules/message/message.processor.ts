@@ -91,7 +91,7 @@ export class MessageProcessor {
     // console.log(`[chatgpt]`, )
     // const that = this;
     return new Promise(async (resolve, reject) => {
-      const warnings = `抱歉，内容涉及敏感词汇，小智无法作答！同时，请关注[草稿智能]关于敏感内容的内容通告和账号处理规定！`;
+      const warnings = `抱歉，内容涉及敏感词汇，小智无法作答！同时，请关注[草稿智能]关于敏感内容的通告和账号处理规定！`;
       try {
         // TODO:输入关键词检测
         let payload: any = {};
