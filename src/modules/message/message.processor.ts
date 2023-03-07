@@ -91,35 +91,63 @@ export class MessageProcessor {
     // console.log(`[chatgpt]`, )
     // const that = this;
     return new Promise(async (resolve, reject) => {
+      const warnings = `抱歉，内容涉及敏感词汇，小智无法作答！同时，请关注[草稿智能]关于敏感内容的内容通告和账号处理规定！`;
       try {
-        const result = await this.api.sendMessage(question, {
-          parentMessageId: supplierReplyId,
-          conversationId: supplierConversationId,
-          messageId,
-          onProgress: (res) => {
-            // Send the progress to room
-            this.emit(conversationId, 'events', res?.response);
-            console.log('->progress:', res?.response);
-            this.events.server.to(conversationId).emit('reply', {
-              questionId: messageId,
-              reply: res.response.replace(/^\s+|\s+$/g, ''),
-              supplierReplyId: res?.messageId,
-              supplierConversationId: res?.conversationId,
-            });
-          },
-        });
+        // TODO:输入关键词检测
+        let payload: any = {};
+        const checking = await this.checkWords(question);
+        if (checking.length > 0) {
+          // 存在敏感词
+          payload = {
+            questionId: messageId,
+            reply: warnings,
+            supplierReplyId: '',
+            supplierConversationId: '',
+          };
+          this.emit(conversationId, 'reply', payload);
+        } else {
+          // 不存在敏感词
+          const result = await this.api.sendMessage(question, {
+            parentMessageId: supplierReplyId,
+            conversationId: supplierConversationId,
+            messageId,
+            onProgress: (res) => {
+              // Send the progress to room
+              console.log('->progress:', res?.response);
+              // this.emit(conversationId, 'events', res?.response);
+              this.emit(conversationId, 'progress', {
+                questionId: messageId,
+                reply: this.replaceWords(res.response),
+                supplierReplyId: res?.messageId,
+                supplierConversationId: res?.conversationId,
+              });
+            },
+          });
+
+          const reply = this.replaceWords(result.response);
+          const checking = await this.checkWords(reply);
+          payload = {
+            conversationId,
+            userId,
+            questionId: messageId,
+            question,
+            reply,
+            supplierReplyId: result?.messageId,
+            supplierConversationId: result?.conversationId,
+          };
+
+          if (checking.length > 0) {
+            payload.reply = warnings;
+            payload.warnings = 1;
+          }
+          this.emit(conversationId, 'reply', payload);
+          payload.reply = reply; // 封存内容
+        }
+
+        // TODO:输出关键词检测
         // console.log(`->result:`);
         // // Send the result to room
-        const payload = {
-          conversationId,
-          userId,
-          questionId: messageId,
-          question,
-          reply: result.response.replace(/^\s+|\s+$/g, ''),
-          supplierReplyId: result?.messageId,
-          supplierConversationId: result?.conversationId,
-        };
-        this.events.server.to(conversationId).emit('reply', payload);
+
         // ready to keep archives
         await this.messageQueue.add('archives', payload, {
           attempts: 3,
@@ -172,5 +200,32 @@ export class MessageProcessor {
   async onGlobalCompleted(jobId: number, result: any) {
     // const job = await this.transQueue.getJob(jobId);
     console.log('Job completed:', jobId);
+  }
+
+  /**
+   * 敏感词检测
+   * @param content
+   * @returns
+   */
+  private async checkWords(content: string): Promise<any[]> {
+    const url = this.endpoint.checking;
+    const res: any = await fetch(url, {
+      mode: 'cors',
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content }),
+    }).then((res) => res.json());
+    if (res.code != '0') {
+      console.error(`[checkwords]`, res);
+      return [];
+    }
+    return res.word_list;
+  }
+
+  private replaceWords(content: string): string {
+    return content
+      .replace(/^\s+|\s+$/g, '')
+      .replace(/(chatgpt)/gi, '小智')
+      .replace(/(openai)/gi, '草稿智能');
   }
 }

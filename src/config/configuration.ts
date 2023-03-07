@@ -4,6 +4,7 @@ export default () => {
     endpoint: {
       epid: process.env.DRAFT_EPID,
       draft: process.env.DRAFT_SERVER,
+      checking: process.env.DRAFT_CHECKING,
     },
 
     redis: {
