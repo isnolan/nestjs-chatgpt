@@ -38,9 +38,9 @@ deploy:
   script:
     # - export
     # - docker build -t $REGISTRY_PATH .
+    - echo "$REGISTRY_PWD" | docker login --username $REGISTRY_USER $CI_REGISTRY --password-stdin
     - docker buildx create --use default
     - docker buildx build --platform linux/amd64,linux/arm64 --push -t $REGISTRY_PATH .
-    - echo "$REGISTRY_PWD" | docker login --username $REGISTRY_USER $CI_REGISTRY --password-stdin
     - docker push $REGISTRY_PATH
     - docker logout
 
