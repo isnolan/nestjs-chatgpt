@@ -31,13 +31,14 @@ deploy:
   stage: deploy
   image: docker:20.10.17-dind
   tags:
-    - chrome
+    - node.js
   variables:
     REGISTRY_PATH: $CI_REGISTRY_IMAGE:$CI_PIPELINE_ID
     IMAGE_ID: $(docker images | grep $CI_REGISTRY/$CI_PROJECT_PATH\/$IMAGE_NAME | awk '{print $3}')
   script:
     # - export
-    - docker build -t $REGISTRY_PATH .
+    # - docker build -t $REGISTRY_PATH .
+    - docker buildx build --platform linux/amd64,linux/arm64 --push -t $REGISTRY_PATH .
     - echo "$REGISTRY_PWD" | docker login --username $REGISTRY_USER $CI_REGISTRY --password-stdin
     - docker push $REGISTRY_PATH
     - docker logout

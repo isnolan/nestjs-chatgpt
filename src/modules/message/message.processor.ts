@@ -208,8 +208,11 @@ export class MessageProcessor {
    * @returns
    */
   private async checkWords(content: string): Promise<any[]> {
-    const url = this.endpoint.checking;
-    const res: any = await fetch(url, {
+    if (!this.endpoint.checking) {
+      return [];
+    }
+
+    const res: any = await fetch(this.endpoint.checking, {
       mode: 'cors',
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
